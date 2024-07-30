@@ -1,9 +1,11 @@
 import CardData from "@/components/CardData";
+import ContentTabs from "@/components/ContentTabs";
 
 export default function Home() {
   return (
     <>
-      <h1>Kantodex</h1>
+      this is page tsx!
+      <ContentTabs />
       <CardData />
     </>
   );

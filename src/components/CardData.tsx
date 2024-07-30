@@ -94,7 +94,7 @@ return (
     <div className="flex justify-between mb-4">
       
     </div>
-    <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-5 gap-3' : 'flex flex-col'}`}>
+    <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
       {data?.pages.flatMap(page => page.results).map((pokemon, index) => (
         <Card 
           key={pokemon.name} 
@@ -110,12 +110,12 @@ return (
               alt={`${pokemon.name} sprite`}
             />
           )}
-          <div className={`${view === 'list' ? 'flex-1' : ''}`}>
+          <div className={`${view === 'list' ? 'flex-2 ' : ''}`}>
             <CardHeader>
               <CardTitle>
-                <h3>{capitalizeFirstLetter(pokemon.name)}</h3>
+                <h3><span className='text-gray-500 mr-2'>{index + 1}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
               </CardTitle>
-              <CardDescription>Card Description</CardDescription>
+              {/* <CardDescription>Card Description</CardDescription> */}
             </CardHeader>
             <CardContent className="align-middle p-3 m-3 border-2 border-black-200 rounded-md bg-white">
               {view === 'grid' && (
@@ -128,9 +128,9 @@ return (
                 />
               )}
             </CardContent>
-            <CardFooter>
+            {/* <CardFooter>
               <p>Card Footer</p>
-            </CardFooter>
+            </CardFooter> */}
           </div>
         </Card>
       ))}
