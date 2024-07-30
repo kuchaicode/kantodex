@@ -1,10 +1,10 @@
-import PokeCard from "@/components/PokeCard";
+import CardData from "@/components/CardData";
 
 export default function Home() {
   return (
     <>
       <h1>Home???? FUCK</h1>
-      <PokeCard />
+      <CardData />
     </>
   );
 }

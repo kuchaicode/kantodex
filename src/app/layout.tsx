@@ -1,26 +1,20 @@
 import type { Metadata } from "next";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
 import { Inter } from "next/font/google";
 import "@/app/globals.css";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuIndicator,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuViewport,
-} from "@/components/ui/navigation-menu";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
 import { ThemeProvider } from "@/components/ThemeProvider";
+import CardData from "@/components/CardData";
+import PokedataProvider from "@/components/PokedataProvider";
+import Nav from "@/components/Nav";
+import PageList from "@/components/PageList";
+
+// REMEMBER: QUERYCLIENTPROVIDER ADD LATER PLSS
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -44,33 +38,14 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-      <NavigationMenu>
-        <NavigationMenuList>
-          <NavigationMenuItem>
-            <NavigationMenuTrigger>Item One</NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <NavigationMenuLink>Link</NavigationMenuLink>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
-        {children}
-        <Pagination>
-  <PaginationContent>
-      <PaginationItem>
-        <PaginationPrevious href="#" />
-      </PaginationItem>
-      <PaginationItem>
-        <PaginationLink href="#">1</PaginationLink>
-      </PaginationItem>
-      <PaginationItem>
-        <PaginationEllipsis />
-      </PaginationItem>
-      <PaginationItem>
-        <PaginationNext href="#" />
-      </PaginationItem>
-    </PaginationContent>
-  </Pagination>
+
+        <PokedataProvider>
+          <Nav />
+          {children} 
+          <PageList />
+        </PokedataProvider>
+        
+
   </ThemeProvider>
         </body>
     </html>
