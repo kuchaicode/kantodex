@@ -19,9 +19,14 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 type Props = {}
 
 const fetchPokemon = async ({ pageParam = 0 }) => {
-  const response = await axios.get(`https://pokeapi.co/api/v2/pokemon?offset=${pageParam}&limit=${pageParam === 140 ? 11 : 20}`);
+  const limit = pageParam >= 140 ? 11 : 20;
+  const response = await axios.get(`https://pokeapi.co/api/v2/pokemon?offset=${pageParam}&limit=${limit}`);
   return response.data;
 };
+// pageParam = from Tanstack Query, needed for InfiniteQuery
+// Uses offset and limit here
+// Limit: on 140th load 11 to stop properly in Gen1
+
 
 export default function CardData() {
   const {
@@ -46,6 +51,7 @@ export default function CardData() {
     initialPageParam: 0, 
   });
 
+  // Node: HTMLelement, else doesnt compile
   const loadMoreRef = useCallback((node: HTMLElement | null) => {
     if (!node || isLoading || !hasNextPage) return;
   
@@ -72,6 +78,7 @@ export default function CardData() {
   }
 
   const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+// Capitalization for  first letter
 
   return (
     <>
