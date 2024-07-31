@@ -103,21 +103,22 @@ return (
         >
           {view === 'list' && (
             <Image 
-              className='mr-4'
+              className='m-4'
               src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`}
               width={100}
               height={100}
               alt={`${pokemon.name} sprite`}
             />
           )}
-          <div className={`${view === 'list' ? 'flex-2 ' : ''}`}>
+          <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
             <CardHeader>
               <CardTitle>
                 <h3><span className='text-gray-500 mr-2'>{index + 1}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
               </CardTitle>
               {/* <CardDescription>Card Description</CardDescription> */}
             </CardHeader>
-            <CardContent className="align-middle p-3 m-3 border-2 border-black-200 rounded-md bg-white">
+            <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-white'}`}>
+
               {view === 'grid' && (
                 <Image 
                   className='mx-auto'

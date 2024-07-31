@@ -42,7 +42,6 @@ export default function RootLayout({
         <PokedataProvider>
           <Nav />
           {children} 
-          <PageList />
         </PokedataProvider>
         
 
