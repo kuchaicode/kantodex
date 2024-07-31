@@ -1,5 +1,4 @@
 "use client";
-import { useRef } from 'react';
 import { useCallback } from 'react';
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -15,8 +14,10 @@ import {
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import axios from 'axios';
-import { useQuery } from "@tanstack/react-query";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+
+
+import { useSearchParams } from 'next/navigation';
 
 type Props = {}
 
@@ -32,7 +33,21 @@ const fetchPokemon = async ({ pageParam = 0 }) => {
 
 export default function CardData() {
   const [view, setView] = useState<'grid' | 'list'>('grid');
+  const [displayData, setDisplayData] = useState<any>([]);
   // useState to toggle view
+  const searchParams = useSearchParams();
+  const search = searchParams.get('search') || '';
+  const isSearchEmpty = !search || search.length === 0
+
+
+
+  const { data:completeData }  = useQuery({
+    queryKey: ['pokemonList', search],
+    queryFn: async () => {
+      const response = await axios.get("https://pokeapi.co/api/v2/pokemon?limit=151");
+      return response.data;
+    },
+  });
 
   const {
     data,
@@ -57,6 +72,17 @@ export default function CardData() {
     // initialPageParam value necessary to function
   });
 
+  // useEffect for search because infinite load...
+  useEffect(() => {
+    isSearchEmpty ?
+    setDisplayData(data?.pages.flatMap(page => page.results)) :
+    setDisplayData(completeData?.results);
+    return
+  }, [search, data, completeData, isSearchEmpty]);
+// empty = incomplete data since incomplete = not fully loaded pokemon (the usual)
+// not empty = search from all
+
+
   // Node: HTMLelement, else doesnt compile
   const loadMoreRef = useCallback((node: HTMLElement | null) => {
     if (!node || isLoading || !hasNextPage) return;
@@ -73,6 +99,7 @@ export default function CardData() {
     if (node) observer.observe(node);
     return () => observer.disconnect();
   }, [isLoading, hasNextPage, fetchNextPage]);
+//  Intersection Observer end (for infinite load to work)
 
   if (isLoading && !isFetching) {
     return <span><Skeleton className="w-[100px] h-[20px] rounded-full" /></span>;
@@ -84,56 +111,58 @@ export default function CardData() {
   }
 
   const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
-// Capitalization for  first letter
+// Capitalization for  first letter move it to util folder later?
 
 return (
   <>
-      <Button onClick={() => setView(view === 'grid' ? 'list' : 'grid')} className="mx-auto rounded">
-        {view === 'grid' ? 'Grid' : 'List'} {view === 'grid' ? <LucideGrid className='ml-2'/>:<LucideList className='ml-2'/> } 
+    <div className='flex justify-end mb-5 mr-5'>
+      <Button onClick={() => setView(view === 'grid' ? 'list' : 'grid')} className="rounded ">
+        {capitalizeFirstLetter(view)} {view === 'grid' ? <LucideGrid className='ml-2'/>:<LucideList className='ml-2'/> } 
       </Button> 
-    <div className="flex justify-between mb-4">
-      
     </div>
     <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
-      {data?.pages.flatMap(page => page.results).map((pokemon, index) => (
-        <Card 
-          key={pokemon.name} 
-          className={`border-2 border-red-400 bg-gray-100 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
-          ref={index === data.pages.flatMap(page => page.results).length - 1 ? loadMoreRef : null}
-        >
-          {view === 'list' && (
-            <Image 
-              className='m-4'
-              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`}
-              width={100}
-              height={100}
-              alt={`${pokemon.name} sprite`}
-            />
-          )}
-          <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
-            <CardHeader>
-              <CardTitle>
-                <h3><span className='text-gray-500 mr-2'>{index + 1}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
-              </CardTitle>
-              {/* <CardDescription>Card Description</CardDescription> */}
-            </CardHeader>
-            <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-white'}`}>
+    {/* Search start (2 lines kinda acts like fuzzy search)*/}
+      {displayData?.map((pokemon: any, index: number) => (
+        (pokemon.name.includes(search) || isSearchEmpty) && (
+          <Card 
+            key={pokemon.name} 
+            className={`border-2 border-red-400 bg-gray-100 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
+            ref={index === displayData.length - 1 ? loadMoreRef : null}
+          >
+            {view === 'list' && (
+              <Image 
+                className='m-4'
+                src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`}
+                width={100}
+                height={100}
+                alt={`${pokemon.name} sprite`}
+              />
+            )}
+            <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
+              <CardHeader>
+                <CardTitle>
+                  <h3><span className='text-gray-500 mr-2'>{index + 1}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
+                </CardTitle>
+                {/* <CardDescription>Card Description</CardDescription> */}
+              </CardHeader>
+              <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-white'}`}>
 
-              {view === 'grid' && (
-                <Image 
-                  className='mx-auto'
-                  src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`}
-                  width={150}
-                  height={150}
-                  alt={`${pokemon.name} sprite`}
-                />
-              )}
-            </CardContent>
-            {/* <CardFooter>
-              <p>Card Footer</p>
-            </CardFooter> */}
-          </div>
-        </Card>
+                {view === 'grid' && (
+                  <Image 
+                    className='mx-auto'
+                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`}
+                    width={150}
+                    height={150}
+                    alt={`${pokemon.name} sprite`}
+                  />
+                )}
+              </CardContent>
+              {/* <CardFooter>
+                <p>Card Footer</p>
+              </CardFooter> */}
+            </div>
+          </Card>
+        )
       ))}
     </div>
   </>
