@@ -131,6 +131,7 @@ return (
     </div>
     <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
     {/* Search start (tolowercase the displaydata from usestate; kinda acts like fuzzy search)*/}
+    {/* ALSO BELOW: where index is defined so it can be used to properly render the correct sprite */}
       {displayData?.map((pokemon: any, index: number) => (
         (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
         <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
@@ -174,7 +175,8 @@ return (
         </Link>
         )
       ))}
-    {searchParams?.get('pokemon') && <PokeModal pokemon={searchParams?.get('pokemon')} />}
+    {searchParams?.get('pokemon') && <PokeModal pokemon={searchParams.get('pokemon') || ''} />}
+    {/* spriteUrl={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`} */}
     {/* if search params pokemon not empty = open modal */}
     </div>
   </>
