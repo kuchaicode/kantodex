@@ -15,9 +15,9 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import axios from 'axios';
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-
-
 import { useSearchParams } from 'next/navigation';
+import PokeModal from '@/modals/PokeModal';
+import Link from 'next/link';
 
 type Props = {}
 
@@ -39,7 +39,16 @@ export default function CardData() {
   const search = searchParams.get('search') || '';
   const isSearchEmpty = !search || search.length === 0
 
-
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams?.toString())
+      params.set(name, value)
+ 
+      return params.toString()
+    },
+    [searchParams]
+  )
+// Added to access modal through search params
 
   const { data:completeData }  = useQuery({
     queryKey: ['pokemonList', search],
@@ -121,11 +130,11 @@ return (
       </Button> 
     </div>
     <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
-    {/* Search start (2 lines kinda acts like fuzzy search)*/}
+    {/* Search start (tolowercase the displaydata from usestate; kinda acts like fuzzy search)*/}
       {displayData?.map((pokemon: any, index: number) => (
-        (pokemon.name.includes(search) || isSearchEmpty) && (
+        (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
+        <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
           <Card 
-            key={pokemon.name} 
             className={`border-2 border-red-400 bg-gray-100 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
             ref={index === displayData.length - 1 ? loadMoreRef : null}
           >
@@ -162,8 +171,11 @@ return (
               </CardFooter> */}
             </div>
           </Card>
+        </Link>
         )
       ))}
+    {searchParams?.get('pokemon') && <PokeModal pokemon={searchParams?.get('pokemon')} />}
+    {/* if search params pokemon not empty = open modal */}
     </div>
   </>
 );
