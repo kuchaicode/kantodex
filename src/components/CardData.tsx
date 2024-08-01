@@ -2,7 +2,7 @@
 import { useCallback } from 'react';
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { LucideList, LucideGrid } from 'lucide-react';
+import { LucideList, LucideGrid, LucideAlbum, LucideHouse } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -18,6 +18,7 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useSearchParams } from 'next/navigation';
 import PokeModal from '@/modals/PokeModal';
 import Link from 'next/link';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
 type Props = {}
 
@@ -34,28 +35,27 @@ const fetchPokemon = async ({ pageParam = 0 }) => {
 export default function CardData() {
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [displayData, setDisplayData] = useState<any>([]);
-  // useState to toggle view
+  const [activeTab, setActiveTab] = useState<'all' | 'owned'>('all'); 
   const searchParams = useSearchParams();
   const search = searchParams.get('search') || '';
-  const isSearchEmpty = !search || search.length === 0
+  const isSearchEmpty = !search || search.length === 0;
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams?.toString())
-      params.set(name, value)
- 
-      return params.toString()
+      const params = new URLSearchParams(searchParams?.toString());
+      params.set(name, value);
+      return params.toString();
     },
     [searchParams]
-  )
+  );
 // Added to access modal through search params
 
-  const { data:completeData }  = useQuery({
-    queryKey: ['pokemonList', search],
-    queryFn: async () => {
-      const response = await axios.get("https://pokeapi.co/api/v2/pokemon?limit=151");
-      return response.data;
-    },
+  const { data: completeData } = useQuery({
+  queryKey: ['pokemonList', search],
+  queryFn: async () => {
+    const response = await axios.get("https://pokeapi.co/api/v2/pokemon?limit=151");
+    return response.data;
+  },
   });
 
   const {
@@ -78,15 +78,15 @@ export default function CardData() {
       // using OR for fallback value when nextPageOffset is null. This ensures it is read as a string...
     },
     initialPageParam: 0, 
-    // initialPageParam value necessary to function
+    // initialPageParam value necessary to function at all
   });
 
   // useEffect for search because infinite load...
   useEffect(() => {
     isSearchEmpty ?
-    setDisplayData(data?.pages.flatMap(page => page.results)) :
-    setDisplayData(completeData?.results);
-    return
+      setDisplayData(data?.pages.flatMap(page => page.results)) :
+      setDisplayData(completeData?.results);
+    return;
   }, [search, data, completeData, isSearchEmpty]);
 // empty = incomplete data since incomplete = not fully loaded pokemon (the usual)
 // not empty = search from all
@@ -95,7 +95,7 @@ export default function CardData() {
   // Node: HTMLelement, else doesnt compile
   const loadMoreRef = useCallback((node: HTMLElement | null) => {
     if (!node || isLoading || !hasNextPage) return;
-  
+
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting) {
@@ -104,6 +104,7 @@ export default function CardData() {
       },
       { threshold: 1 }
     );
+
   
     if (node) observer.observe(node);
     return () => observer.disconnect();
@@ -111,74 +112,137 @@ export default function CardData() {
 //  Intersection Observer end (for infinite load to work)
 
   if (isLoading && !isFetching) {
-    return <span><Skeleton className="w-[100px] h-[20px] rounded-full" /></span>;
+  return <span><Skeleton className="w-[100px] h-[20px] rounded-full" /></span>;
   }
 
   if (isError) {
-    console.error("Error! :( Please check:", isError);
-    return <span>Error loading data!</span>;
+  console.error("Error! :( Please check:", isError);
+  return <span>Error loading data!</span>;
   }
 
   const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 // Capitalization for  first letter move it to util folder later?
 
+// Below. This straight up doesnt work FOR NOW 
+  const isOwned = (pokemon: any) => {
+    return pokemon.owned;
+  };
+
+
+// supposed to filter based on displaydata on own status that probably wont work for now
+  const filteredData = displayData?.filter((pokemon: any) => {
+    if (activeTab === 'owned') {
+      return isOwned(pokemon);
+    }
+    return true; 
+  }); 
+// return true to show all 
+
 return (
   <>
-    <div className='flex justify-end mb-5 mr-5'>
-      <Button onClick={() => setView(view === 'grid' ? 'list' : 'grid')} className="rounded ">
-        {capitalizeFirstLetter(view)} {view === 'grid' ? <LucideGrid className='ml-2'/>:<LucideList className='ml-2'/> } 
-      </Button> 
-    </div>
-    <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
-    {/* Search start (tolowercase the displaydata from usestate; kinda acts like fuzzy search)*/}
-    {/* ALSO BELOW: where index is defined so it can be used to properly render the correct sprite */}
-      {displayData?.map((pokemon: any, index: number) => (
-        (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
-        <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
-          <Card 
-            className={`border-2 border-red-400 bg-gray-100 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
-            ref={index === displayData.length - 1 ? loadMoreRef : null}
-          >
-            {view === 'list' && (
-              <Image 
-                className='m-4'
-                src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`}
-                width={100}
-                height={100}
-                alt={`${pokemon.name} sprite`}
-              />
-            )}
-            <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
-              <CardHeader>
-                <CardTitle>
-                  <h3><span className='text-gray-500 mr-2'>{index + 1}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
-                </CardTitle>
-                {/* <CardDescription>Card Description</CardDescription> */}
-              </CardHeader>
-              <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-white'}`}>
-
-                {view === 'grid' && (
-                  <Image 
-                    className='mx-auto'
+  <div className='flex justify-end mb-5 mr-5'>
+    <Button onClick={() => setView(view === 'grid' ? 'list' : 'grid')} className="rounded ">
+      {capitalizeFirstLetter(view)} {view === 'grid' ? <LucideGrid className='ml-2' /> : <LucideList className='ml-2' />}
+    </Button>
+  </div>
+  <Tabs defaultValue="all" className="mx-auto flex flex-col flex-grow">
+    <TabsList className='w-1/2 p-8 mx-auto'>
+      <TabsTrigger value="all" className='flex flex-grow py-4 px-10' onClick={() => setActiveTab('all')}>
+        <LucideAlbum className='mr-2' />All
+      </TabsTrigger>
+      <TabsTrigger value="owned" className='flex flex-grow py-4 px-10' onClick={() => setActiveTab('owned')}>
+        <LucideHouse className='mr-2' />Owned
+      </TabsTrigger>
+    </TabsList>
+    <TabsContent value="all">
+      <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
+        {filteredData?.map((pokemon: any, index: number) => (
+          (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
+            <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
+              <Card
+                className={`border-2 border-red-400 bg-gray-100 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
+                ref={index === filteredData.length - 1 ? loadMoreRef : null}
+              >
+                {view === 'list' && (
+                  <Image
+                    className='m-4'
                     src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`}
-                    width={150}
-                    height={150}
+                    width={100}
+                    height={100}
                     alt={`${pokemon.name} sprite`}
                   />
                 )}
-              </CardContent>
-              {/* <CardFooter>
-                <p>Card Footer</p>
-              </CardFooter> */}
-            </div>
-          </Card>
-        </Link>
-        )
-      ))}
-    {searchParams?.get('pokemon') && <PokeModal pokemon={searchParams.get('pokemon') || ''} />}
-    {/* spriteUrl={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`} */}
-    {/* if search params pokemon not empty = open modal */}
-    </div>
-  </>
+                <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
+                  <CardHeader>
+                    <CardTitle>
+                      <h3><span className='text-gray-500 mr-2'>{index + 1}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-white'}`}>
+                    {view === 'grid' && (
+                      <Image
+                        className='mx-auto'
+                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`}
+                        width={150}
+                        height={150}
+                        alt={`${pokemon.name} sprite`}
+                      />
+                    )}
+                  </CardContent>
+                </div>
+              </Card>
+            </Link>
+          )
+        ))}
+        {searchParams?.get('pokemon') && <PokeModal pokemon={searchParams.get('pokemon') || ''} />}
+      </div>
+    </TabsContent>
+    <TabsContent value="owned">
+      <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
+        {filteredData?.map((pokemon: any, index: number) => (
+          isOwned(pokemon) && (
+            <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
+              <Card
+                className={`border-2 border-red-400 bg-gray-100 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
+                ref={index === filteredData.length - 1 ? loadMoreRef : null}
+              >
+                {view === 'list' && (
+                  <Image
+                    className='m-4'
+                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`}
+                    width={100}
+                    height={100}
+                    alt={`${pokemon.name} sprite`}
+                  />
+                )}
+                <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
+                  <CardHeader>
+                    <CardTitle>
+                      <h3><span className='text-gray-500 mr-2'>{index + 1}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-white'}`}>
+                    {view === 'grid' && (
+                      <Image
+                        className='mx-auto'
+                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`}
+                        width={150}
+                        height={150}
+                        alt={`${pokemon.name} sprite`}
+                      />
+                    )}
+                  </CardContent>
+                </div>
+              </Card>
+            </Link>
+          )
+        ))}
+        {searchParams?.get('pokemon') && <PokeModal pokemon={searchParams.get('pokemon') || ''} />}
+      </div>
+    </TabsContent>
+  </Tabs>
+
+</>
 );
         }
+

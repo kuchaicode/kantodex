@@ -29,7 +29,7 @@ export default function PokeModal({ pokemon }: { pokemon: string }) {
         setIsSaved(true); 
       }
     } catch (error) {
-      console.error('Error parsing localStorage:', error);
+      console.error('localStorage error!', error);
     }
   }, [value]);
 

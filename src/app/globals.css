@@ -65,3 +65,10 @@
   /* highlight colors change to a fitting color instead of ugly blu */
 
 }
+
+input[type="text"],
+input[type="search"],
+textarea {
+    background-color: white;
+    color: black; 
+}
