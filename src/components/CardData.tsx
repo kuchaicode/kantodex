@@ -17,10 +17,14 @@ import axios from 'axios';
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useSearchParams } from 'next/navigation';
 import PokeModal from '@/modals/PokeModal';
+import { getLocalStorage } from '@/hooks/useLocalStorage';
 import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
-type Props = {}
+type Props = {
+  name:string
+  url:string
+}
 
 const fetchPokemon = async ({ pageParam = 0 }) => {
   const limit = pageParam >= 140 ? 11 : 20;
@@ -83,10 +87,14 @@ export default function CardData() {
 
   // useEffect for search because infinite load...
   useEffect(() => {
+    let rawData: Array<{name:string, url:string}> = []
     isSearchEmpty ?
-      setDisplayData(data?.pages.flatMap(page => page.results)) :
-      setDisplayData(completeData?.results);
-    return;
+      rawData = data?.pages.flatMap(page => page.results) as Array<{name:string, url:string}> :
+      rawData = completeData?.results as Array<{name:string, url:string}>
+    setDisplayData(rawData?.map((item, i) => {
+      const customData = getLocalStorage(item?.name || "")
+      return { ...item, id: i+1, captureData:customData }
+    }))
   }, [search, data, completeData, isSearchEmpty]);
 // empty = incomplete data since incomplete = not fully loaded pokemon (the usual)
 // not empty = search from all
@@ -125,16 +133,19 @@ export default function CardData() {
 
 // Still not working. Ideally checks for datecaptured's presence to check if owned or not 
 const isOwned = (pokemon: any) => {
-  return !!pokemon.dateCaptured;
+  return pokemon.captureData.dateCaptured ? true : false;
 };
 
 // supposed to filter based on displaydata on own status that probably wont work for now
 const filteredData = displayData?.filter((pokemon: any) => {
+  // console.log(pokemon)
   if (activeTab === 'owned') {
     return isOwned(pokemon); 
   }
   return true; 
 });
+console.log(displayData)
+console.log(filteredData)
 // return true : show all 
 
 return (
@@ -165,7 +176,7 @@ return (
                 {view === 'list' && (
                   <Image
                     className='m-4'
-                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`}
+                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
                     width={100}
                     height={100}
                     alt={`${pokemon.name} sprite`}
@@ -174,14 +185,14 @@ return (
                 <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
                   <CardHeader>
                     <CardTitle>
-                      <h3><span className='text-gray-500 mr-2'>{index + 1}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
+                      <h3><span className='text-gray-500 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-white'}`}>
                     {view === 'grid' && (
                       <Image
                         className='mx-auto'
-                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`}
+                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
                         width={150}
                         height={150}
                         alt={`${pokemon.name} sprite`}
@@ -191,8 +202,8 @@ return (
                 </div>
                 <CardFooter>
                 <span className={`mr-2 ${isOwned(pokemon) ? 'text-green-500' : 'text-gray-500'}`}>
-  {isOwned(pokemon) ? 'Yes' : 'X'} 
-</span>
+                  {isOwned(pokemon) ? 'Yes' : 'X'} 
+                </span>
                 </CardFooter>
               </Card>
             </Link>
@@ -213,7 +224,7 @@ return (
                 {view === 'list' && (
                   <Image
                     className='m-4'
-                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`}
+                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
                     width={100}
                     height={100}
                     alt={`${pokemon.name} sprite`}
@@ -222,14 +233,14 @@ return (
                 <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
                   <CardHeader>
                     <CardTitle>
-                      <h3><span className='text-gray-500 mr-2'>{index + 1}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
+                      <h3><span className='text-gray-500 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-white'}`}>
                     {view === 'grid' && (
                       <Image
                         className='mx-auto'
-                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`}
+                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
                         width={150}
                         height={150}
                         alt={`${pokemon.name} sprite`}

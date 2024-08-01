@@ -25,3 +25,8 @@ const useLocalStorage = (key:string, initialValue:Object) => {
 // Proper TypeScript :)
 
 export default useLocalStorage
+
+export function getLocalStorage(key:string) {
+  const value = window.localStorage.getItem(key)
+  return value ? JSON.parse(value) : ""
+}

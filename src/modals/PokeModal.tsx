@@ -23,9 +23,8 @@ export default function PokeModal({ pokemon }: { pokemon: string }) {
 
   useEffect(() => {
     try {
-      const parsedValue = JSON.parse(value);
-      if (parsedValue.name && parsedValue.dateCaptured) {
-        setMyPokemon(parsedValue);
+      if (value.name && value.dateCaptured) {
+        setMyPokemon(value);
         setIsSaved(true); 
       }
     } catch (error) {
@@ -36,10 +35,10 @@ export default function PokeModal({ pokemon }: { pokemon: string }) {
   const saveToLocalStorage = (e: any) => {
     e.preventDefault();
     const currentDate = new Date().toISOString().split("T")[0]; 
-    const serializedData = JSON.stringify({
+    const serializedData = {
       name: myPokemon.name,
       dateCaptured: myPokemon.dateCaptured || currentDate, 
-    });
+    };
     setValue(serializedData);
     setIsSaved(true);
   };
