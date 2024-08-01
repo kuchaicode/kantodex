@@ -1,8 +1,9 @@
 "use client"
 
 import React, { useCallback } from 'react'
-import { LucideSearch } from 'lucide-react'
+import { LucideSearch, LucideMoon, LucideSun} from 'lucide-react'
 import { usePathname, useSearchParams, useRouter } from 'next/navigation'
+import { Button } from './ui/button'
 
 type Props = {}
 
@@ -50,7 +51,7 @@ const createQueryString = debounce(useCallback(
             </div>
         </div>
         <div className='flex items-center'>
-            <a href='#' className='text-white hover:text-red-200'>HMMM</a>
+            <Button><LucideMoon/></Button>
         </div>
     </div>
 </nav>

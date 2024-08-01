@@ -123,28 +123,22 @@ export default function CardData() {
   const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 // Capitalization for  first letter move it to util folder later?
 
-// Below. This straight up doesnt work FOR NOW 
-  const isOwned = (pokemon: any) => {
-    return pokemon.owned;
-  };
-
+// Still not working. Ideally checks for datecaptured's presence to check if owned or not 
+const isOwned = (pokemon: any) => {
+  return !!pokemon.dateCaptured;
+};
 
 // supposed to filter based on displaydata on own status that probably wont work for now
-  const filteredData = displayData?.filter((pokemon: any) => {
-    if (activeTab === 'owned') {
-      return isOwned(pokemon);
-    }
-    return true; 
-  }); 
-// return true to show all 
+const filteredData = displayData?.filter((pokemon: any) => {
+  if (activeTab === 'owned') {
+    return isOwned(pokemon); 
+  }
+  return true; 
+});
+// return true : show all 
 
 return (
   <>
-  <div className='flex justify-end mb-5 mr-5'>
-    <Button onClick={() => setView(view === 'grid' ? 'list' : 'grid')} className="rounded ">
-      {capitalizeFirstLetter(view)} {view === 'grid' ? <LucideGrid className='ml-2' /> : <LucideList className='ml-2' />}
-    </Button>
-  </div>
   <Tabs defaultValue="all" className="mx-auto flex flex-col flex-grow">
     <TabsList className='w-1/2 p-8 mx-auto'>
       <TabsTrigger value="all" className='flex flex-grow py-4 px-10' onClick={() => setActiveTab('all')}>
@@ -153,6 +147,11 @@ return (
       <TabsTrigger value="owned" className='flex flex-grow py-4 px-10' onClick={() => setActiveTab('owned')}>
         <LucideHouse className='mr-2' />Owned
       </TabsTrigger>
+      <div className='flex justify-center mb-5 mr-5'>
+    <Button onClick={() => setView(view === 'grid' ? 'list' : 'grid')} className="rounded ">
+      {capitalizeFirstLetter(view)} {view === 'grid' ? <LucideGrid className='ml-2' /> : <LucideList className='ml-2' />}
+    </Button>
+      </div>
     </TabsList>
     <TabsContent value="all">
       <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
@@ -190,6 +189,11 @@ return (
                     )}
                   </CardContent>
                 </div>
+                <CardFooter>
+                <span className={`mr-2 ${isOwned(pokemon) ? 'text-green-500' : 'text-gray-500'}`}>
+  {isOwned(pokemon) ? 'Yes' : 'X'} 
+</span>
+                </CardFooter>
               </Card>
             </Link>
           )
@@ -233,6 +237,7 @@ return (
                     )}
                   </CardContent>
                 </div>
+                
               </Card>
             </Link>
           )
