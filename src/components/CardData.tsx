@@ -20,6 +20,7 @@ import PokeModal from '@/modals/PokeModal';
 import { getLocalStorage } from '@/hooks/useLocalStorage';
 import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { LucideBadgeCheck, LucideBadge } from 'lucide-react';
 
 type Props = {
   name:string
@@ -170,7 +171,7 @@ return (
           (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
             <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
               <Card
-                className={`border-2 border-red-400 bg-gray-100 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
+                className={`border border-rose-400 bg-gray-800 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
                 ref={index === filteredData.length - 1 ? loadMoreRef : null}
               >
                 {view === 'list' && (
@@ -185,10 +186,10 @@ return (
                 <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
                   <CardHeader>
                     <CardTitle>
-                      <h3><span className='text-gray-500 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
+                      <h3 className='text-gray-100'><span className='text-gray-300 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-white'}`}>
+                  <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-gray-50'}`}>
                     {view === 'grid' && (
                       <Image
                         className='mx-auto'
@@ -201,8 +202,8 @@ return (
                   </CardContent>
                 </div>
                 <CardFooter>
-                <span className={`mr-2 ${isOwned(pokemon) ? 'text-green-500' : 'text-gray-500'}`}>
-                  {isOwned(pokemon) ? 'Yes' : 'X'} 
+                <span className={`mr-2 ${isOwned(pokemon) ? 'text-green-400' : 'text-gray-300'}`}>
+                  {isOwned(pokemon) ? <LucideBadgeCheck/> : <LucideBadge />} 
                 </span>
                 </CardFooter>
               </Card>
@@ -214,11 +215,11 @@ return (
     </TabsContent>
     <TabsContent value="owned">
       <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
-        {filteredData?.map((pokemon: any, index: number) => (
-          isOwned(pokemon) && (
+      {filteredData?.map((pokemon: any, index: number) => (
+  isOwned(pokemon) && (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
             <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
               <Card
-                className={`border-2 border-red-400 bg-gray-100 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
+                className={`border border-rose-300 bg-gray-800 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
                 ref={index === filteredData.length - 1 ? loadMoreRef : null}
               >
                 {view === 'list' && (
@@ -233,10 +234,10 @@ return (
                 <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
                   <CardHeader>
                     <CardTitle>
-                      <h3><span className='text-gray-500 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
+                      <h3 className='text-gray-100'><span className='text-gray-300 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-white'}`}>
+                  <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-gray-50'}`}>
                     {view === 'grid' && (
                       <Image
                         className='mx-auto'
@@ -248,7 +249,11 @@ return (
                     )}
                   </CardContent>
                 </div>
-                
+                <CardFooter className=''>
+                <span className={`${isOwned(pokemon) ? 'text-green-400' : 'text-gray-400'}`}>
+                  {isOwned(pokemon) ? <LucideBadgeCheck/> : <LucideBadge />} 
+                </span>
+                </CardFooter>
               </Card>
             </Link>
           )

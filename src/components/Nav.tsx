@@ -5,6 +5,7 @@ import { LucideSearch, LucideMoon, LucideSun} from 'lucide-react'
 import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import { Button } from './ui/button'
 
+
 type Props = {}
 
 const Nav = (props: Props) => {
@@ -34,7 +35,7 @@ const createQueryString = debounce(useCallback(
 // Searchy function. 500: milliseconds
 
   return (
-    <nav className='bg-[#a70039] shadow-xl'>
+    <nav className='bg-rose-800 shadow-xl'>
     <div className='max-w-6xl mx-auto px-3 py-4 flex items-center justify-between'>
         <div className='flex items-center'>
             <a href='#' className='text-xl font-bold text-white'>Kantodex</a>
