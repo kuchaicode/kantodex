@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@/app/globals.css";
@@ -10,7 +11,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Kantodex",
-  description: "Generation 1 Pokedex",
+  description: "Generation 1 Pokedex with tracking",
 };
 
 export default function RootLayout({
@@ -27,10 +28,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <Suspense>
           <PokedataProvider>
             <Nav />
             {children} 
           </PokedataProvider>
+          </Suspense>
         </ThemeProvider>
       </body>
     </html>
