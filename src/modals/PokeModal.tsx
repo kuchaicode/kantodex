@@ -4,10 +4,12 @@ import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { useState, useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LucideX, LucideBadgeCheck } from "lucide-react";
 import Image from "next/image";
 import StatsGraph from "@/components/ui/graph"
 import { useRouter } from "next/navigation";
+import TypeBadge from "@/components/TypeBadge";
 
 const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
@@ -64,7 +66,7 @@ export default function PokeModal({ pokemon, isUpdateData }: localData){
   const pokemonStats = data?.stats?.map((item: any, i: number) => 
     {return {stat: item?.stat?.name.toUpperCase(), base_stat: item?.base_stat || 100}})
 
-  
+  console.log(data?.types)
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-[999999]">
       <div className="p-8 border border-gray-300 w-[40rem] shadow-lg rounded-lg bg-gray-800 relative max-h-[50rem] overflow-y-auto">
@@ -79,17 +81,28 @@ export default function PokeModal({ pokemon, isUpdateData }: localData){
         {/* Close button end */}
         <div className="text-center">
           <h4 className="text-2xl font-bold text-gray-100">{capitalizeFirstLetter(pokemon)} {(value.name && value.dateCaptured) && <LucideBadgeCheck className="inline text-green-400 mb-1" />}</h4>
+          {isLoading ? (
+            <Skeleton className="h-[150px] w-[150px] rounded-xl mx-auto my-3 px-3 bg-slate-600" />
+          ) : (
             <Image 
               className='mx-auto'
               src={data?.sprites.front_default}
               width={150}
               height={150}
               alt={`${data?.name} sprite`}
-            /> 
-          {(value.name && value.dateCaptured) && <div className="mt-2 px-7 py-3 border border-gray-300 rounded-lg">
+            /> )}
+          <span className="flex items-center justify-center">
+            {data?.types.map(((item:any) => (
+              <TypeBadge type={item?.type.name} key={item?.type.name} />
+            )
+            ))}
+          </span>
+          {
+            (value.name && value.dateCaptured) && <div className="mt-2 px-7 py-3 border border-gray-300 rounded-lg">
             {value.name && <p className="text-lg font-bold text-gray-100">{`Nickname: ${value.name}`}</p>}
-            {value.dateCaptured && <p className="text-lg font-bold text-gray-100">{`Caught on: ${value.dateCaptured}`}</p>}
-          </div>}
+            {value.dateCaptured && <p className="text-lg font-bold text-gray-100">{`Caught on: ${value.dateCaptured}`}</p>
+          }
+        </div>}
           {/* Name + Date Captured */}
         <form onSubmit={saveToLocalStorage} className="mt-4 mb-2 pt-4 rounded-lg bg-gray-600">
           <div className="flex items-center ml-10 mb-4">
