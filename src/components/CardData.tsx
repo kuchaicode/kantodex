@@ -126,7 +126,17 @@ export default function CardData() {
 //  Intersection Observer end (for infinite load to work)
 
   if (isLoading && !isFetching) {
-  return <span><Skeleton className="w-[100px] h-[20px] rounded-full" /></span>;
+  return (
+    <div className="flex pt-4 align-middle justify-center">
+      <div className="flex flex-col space-y-3">
+        <Skeleton className="h-[250px] w-[500px] rounded-xl" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-[500px]" />
+          <Skeleton className="h-4 w-[400px]" />
+        </div>
+      </div>
+    </div>
+  );
   }
 
   if (isError) {
@@ -172,7 +182,7 @@ return (
         </TabsTrigger>
       </TabsList>
       <TabsContent value="all">
-        <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-2 md:grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
+        <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-2 lg:grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
           {filteredData?.map((pokemon: any, index: number) => (
             (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
               <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
@@ -192,8 +202,8 @@ return (
                   <div className={`${view === 'list' ? 'flex-auto pt-10' : ''}`}>
                     <CardHeader>
                       <CardTitle className="h-10">
-                        <h3 className='text-gray-100'><span className='text-gray-300 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
-                        {pokemon?.captureData && <div className="ml-4 mt-1 text-gray-100 text-sm italic">{`${pokemon?.captureData?.name}`}</div>}
+                        <h3 className='text-gray-100 text-sm md:text-xl'><span className='text-gray-300 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
+                        {pokemon?.captureData && <div className="ml-4 mt-1 text-gray-100 text-xs md:text-sm italic">{`${pokemon?.captureData?.name}`}</div>}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-gray-50'}`}>
@@ -221,7 +231,7 @@ return (
         </div>
       </TabsContent>
       <TabsContent value="owned">
-       <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-2 md:grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
+       <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-2 lg:grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
           {filteredData?.map((pokemon: any, index: number) => (
             isOwned(pokemon) && (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
               <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
@@ -241,7 +251,7 @@ return (
                   <div className={`${view === 'list' ? 'flex-auto pt-10' : ''}`}>
                     <CardHeader>
                       <CardTitle className="h-10">
-                        <h3 className='text-gray-100'><span className='text-gray-300 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
+                        <h3 className='text-gray-100 text-sm md:text-xl'><span className='text-gray-300 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
                         {pokemon?.captureData && <div className="ml-4 mt-1 text-gray-100 text-sm italic">{`${pokemon?.captureData?.name}`}</div>}
                       </CardTitle>
                     </CardHeader>
