@@ -2,7 +2,7 @@
 import { useCallback } from 'react';
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { LucideList, LucideGrid } from 'lucide-react';
+import { LucideList, LucideGrid, LucideAlbum, LucideHouse } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -15,11 +15,17 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import axios from 'axios';
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-
-
 import { useSearchParams } from 'next/navigation';
+import PokeModal from '@/modals/PokeModal';
+import { getLocalStorage } from '@/hooks/useLocalStorage';
+import Link from 'next/link';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { LucideBadgeCheck, LucideBadge } from 'lucide-react';
 
-type Props = {}
+// type Props = {
+//   name:string
+//   url:string
+// }
 
 const fetchPokemon = async ({ pageParam = 0 }) => {
   const limit = pageParam >= 140 ? 11 : 20;
@@ -34,19 +40,32 @@ const fetchPokemon = async ({ pageParam = 0 }) => {
 export default function CardData() {
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [displayData, setDisplayData] = useState<any>([]);
-  // useState to toggle view
+  const [activeTab, setActiveTab] = useState<'all' | 'owned'>('all'); 
+  const [updateData, setUpdateData] = useState(false)
   const searchParams = useSearchParams();
   const search = searchParams.get('search') || '';
-  const isSearchEmpty = !search || search.length === 0
+  const isSearchEmpty = !search || search.length === 0;
 
+  const isUpdateData = () => {
+    setUpdateData(!updateData)
+  }
 
-
-  const { data:completeData }  = useQuery({
-    queryKey: ['pokemonList', search],
-    queryFn: async () => {
-      const response = await axios.get("https://pokeapi.co/api/v2/pokemon?limit=151");
-      return response.data;
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams?.toString());
+      params.set(name, value);
+      return params.toString();
     },
+    [searchParams]
+  );
+// Added to access modal through search params
+
+  const { data: completeData } = useQuery({
+  queryKey: ['pokemonList', search],
+  queryFn: async () => {
+    const response = await axios.get("https://pokeapi.co/api/v2/pokemon?limit=151");
+    return response.data;
+  },
   });
 
   const {
@@ -69,16 +88,20 @@ export default function CardData() {
       // using OR for fallback value when nextPageOffset is null. This ensures it is read as a string...
     },
     initialPageParam: 0, 
-    // initialPageParam value necessary to function
+    // initialPageParam value necessary to function at all
   });
 
   // useEffect for search because infinite load...
   useEffect(() => {
+    let rawData: Array<{name:string, url:string}> = []
     isSearchEmpty ?
-    setDisplayData(data?.pages.flatMap(page => page.results)) :
-    setDisplayData(completeData?.results);
-    return
-  }, [search, data, completeData, isSearchEmpty]);
+      rawData = data?.pages.flatMap(page => page.results) as Array<{name:string, url:string}> :
+      rawData = completeData?.results as Array<{name:string, url:string}>
+    setDisplayData(rawData?.map((item, i) => {
+      const customData = getLocalStorage(item?.name || "")
+      return { ...item, id: i+1, captureData:customData }
+    }))
+  }, [search, data, completeData, isSearchEmpty, updateData]);
 // empty = incomplete data since incomplete = not fully loaded pokemon (the usual)
 // not empty = search from all
 
@@ -86,7 +109,7 @@ export default function CardData() {
   // Node: HTMLelement, else doesnt compile
   const loadMoreRef = useCallback((node: HTMLElement | null) => {
     if (!node || isLoading || !hasNextPage) return;
-  
+
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting) {
@@ -95,6 +118,7 @@ export default function CardData() {
       },
       { threshold: 1 }
     );
+
   
     if (node) observer.observe(node);
     return () => observer.disconnect();
@@ -102,69 +126,152 @@ export default function CardData() {
 //  Intersection Observer end (for infinite load to work)
 
   if (isLoading && !isFetching) {
-    return <span><Skeleton className="w-[100px] h-[20px] rounded-full" /></span>;
+  return <span><Skeleton className="w-[100px] h-[20px] rounded-full" /></span>;
   }
 
   if (isError) {
-    console.error("Error! :( Please check:", isError);
-    return <span>Error loading data!</span>;
+  console.error("Error! :( Please check:", isError);
+  return <span>Error loading data!</span>;
   }
 
   const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 // Capitalization for  first letter move it to util folder later?
 
+// Still not working. Ideally checks for datecaptured's presence to check if owned or not 
+const isOwned = (pokemon: any) => {
+  return pokemon.captureData.dateCaptured ? true : false;
+};
+
+// supposed to filter based on displaydata on own status that probably wont work for now
+const filteredData = displayData?.filter((pokemon: any) => {
+  // console.log(pokemon)
+  if (activeTab === 'owned') {
+    return isOwned(pokemon); 
+  }
+  return true; 
+});
+
+console.log(filteredData)
+
+// return true : show all 
+
 return (
   <>
-    <div className='flex justify-end mb-5 mr-5'>
-      <Button onClick={() => setView(view === 'grid' ? 'list' : 'grid')} className="rounded ">
-        {capitalizeFirstLetter(view)} {view === 'grid' ? <LucideGrid className='ml-2'/>:<LucideList className='ml-2'/> } 
-      </Button> 
+    <div className='absolute flex justify-end top-2 right-5 mt-2 mr-2'>
+      <Button onClick={() => setView(view === 'grid' ? 'list' : 'grid')} className="rounded-md text-xs">
+        <span className='hidden md:inline'>{capitalizeFirstLetter(view)}</span>{view === 'grid' ? <LucideGrid className='ml-2' /> : <LucideList className='ml-2' />}
+      </Button>
     </div>
-    <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
-    {/* Search start (2 lines kinda acts like fuzzy search)*/}
-      {displayData?.map((pokemon: any, index: number) => (
-        (pokemon.name.includes(search) || isSearchEmpty) && (
-          <Card 
-            key={pokemon.name} 
-            className={`border-2 border-red-400 bg-gray-100 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
-            ref={index === displayData.length - 1 ? loadMoreRef : null}
-          >
-            {view === 'list' && (
-              <Image 
-                className='m-4'
-                src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`}
-                width={100}
-                height={100}
-                alt={`${pokemon.name} sprite`}
-              />
-            )}
-            <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
-              <CardHeader>
-                <CardTitle>
-                  <h3><span className='text-gray-500 mr-2'>{index + 1}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
-                </CardTitle>
-                {/* <CardDescription>Card Description</CardDescription> */}
-              </CardHeader>
-              <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-white'}`}>
+    <Tabs defaultValue="all" className="mx-auto flex flex-col flex-grow">
+      <TabsList className='w-3/4 p-8 mx-auto border border-rose-50 border-opacity-20'>
+        <TabsTrigger value="all" className='flex flex-grow py-4 px-12' onClick={() => setActiveTab('all')}>
+          <LucideAlbum className='mr-2' />All
+        </TabsTrigger>
+        <TabsTrigger value="owned" className='flex flex-grow py-4 px-12' onClick={() => setActiveTab('owned')}>
+          <LucideHouse className='mr-2' />Owned
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="all">
+        <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
+          {filteredData?.map((pokemon: any, index: number) => (
+            (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
+              <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
+                <Card
+                  className={`border border-rose-400 bg-gray-800 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
+                  ref={index === filteredData.length - 1 ? loadMoreRef : null}
+                >
+                  {view === 'list' && (
+                    <Image
+                      className='m-4'
+                      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
+                      width={100}
+                      height={100}
+                      alt={`${pokemon.name} sprite`}
+                    />
+                  )}
+                  <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
+                    <CardHeader>
+                      <CardTitle className="h-10">
+                        <h3 className='text-gray-100'><span className='text-gray-300 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
+                        {pokemon?.captureData && <div className="ml-4 mt-1 text-gray-100 text-sm italic">{`${pokemon?.captureData?.name}`}</div>}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-gray-50'}`}>
+                      {view === 'grid' && (
+                        <Image
+                          className='mx-auto'
+                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
+                          width={150}
+                          height={150}
+                          alt={`${pokemon.name} sprite`}
+                        />
+                      )}
+                    </CardContent>
+                  </div>
+                  <CardFooter>
+                  <span className={`mr-2 ${isOwned(pokemon) ? 'text-green-400' : 'text-gray-300'} items-center justify-center align`}>
+                    {isOwned(pokemon) ? <LucideBadgeCheck /> : <LucideBadge />} 
+                  </span>
+                  </CardFooter>
+                </Card>
+              </Link>
+            )
+          ))}
+          {searchParams?.get('pokemon') && <PokeModal pokemon={searchParams.get('pokemon') || ''} isUpdateData={isUpdateData} />}
+        </div>
+      </TabsContent>
+      <TabsContent value="owned">
+        <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
+          {filteredData?.map((pokemon: any, index: number) => (
+            isOwned(pokemon) && (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
+              <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
+                <Card
+                  className={`border border-rose-400 bg-gray-800 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
+                  ref={index === filteredData.length - 1 ? loadMoreRef : null}
+                >
+                  {view === 'list' && (
+                    <Image
+                      className='m-4'
+                      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
+                      width={100}
+                      height={100}
+                      alt={`${pokemon.name} sprite`}
+                    />
+                  )}
+                  <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
+                    <CardHeader>
+                      <CardTitle className="h-10">
+                        <h3 className='text-gray-100'><span className='text-gray-300 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
+                        {pokemon?.captureData && <div className="ml-4 mt-1 text-gray-100 text-sm italic">{`${pokemon?.captureData?.name}`}</div>}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-gray-50'}`}>
+                      {view === 'grid' && (
+                        <Image
+                          className='mx-auto'
+                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
+                          width={150}
+                          height={150}
+                          alt={`${pokemon.name} sprite`}
+                        />
+                      )}
+                    </CardContent>
+                  </div>
+                  <CardFooter className=''>
+                  <span className={`mr-2 ${isOwned(pokemon) ? 'text-green-400' : 'text-gray-300'} items-center justify-center align`}>
+                    {isOwned(pokemon) ? <LucideBadgeCheck /> : <LucideBadge />} 
+                  </span>
+                  </CardFooter>
+                </Card>
+              </Link>
+            )
+          ))}
+          {searchParams?.get('pokemon') && <PokeModal pokemon={searchParams.get('pokemon') || ''} isUpdateData={isUpdateData} />}
+        </div>
+      </TabsContent>
+    </Tabs>
 
-                {view === 'grid' && (
-                  <Image 
-                    className='mx-auto'
-                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`}
-                    width={150}
-                    height={150}
-                    alt={`${pokemon.name} sprite`}
-                  />
-                )}
-              </CardContent>
-              {/* <CardFooter>
-                <p>Card Footer</p>
-              </CardFooter> */}
-            </div>
-          </Card>
-        )
-      ))}
-    </div>
-  </>
+</>
 );
         }
+
