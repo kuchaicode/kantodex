@@ -4,12 +4,17 @@ import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { useState, useEffect } from "react";
-import { LucideX } from "lucide-react";
+import { LucideX, LucideBadgeCheck } from "lucide-react";
 import Image from "next/image";
 import StatsGraph from "@/components/ui/graph"
+import { useRouter } from "next/navigation";
 
 const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
+interface localData {
+  pokemon:string
+  isUpdateData: Function
+}
 const statsArray = [
   {label: "HP", key: "hp"},
   {label: "Attack", key: "attack"},
@@ -19,7 +24,8 @@ const statsArray = [
   {label: "Speed", key: "speed"},
 ];
 
-export default function PokeModal({ pokemon }: { pokemon: string }) {
+export default function PokeModal({ pokemon, isUpdateData }: localData){
+  const router = useRouter();
   const [value, setValue] = useLocalStorage(pokemon, "");
   const [myPokemon, setMyPokemon] = useState({ name: "", dateCaptured: "" });
   const [isSaved, setIsSaved] = useState(false);
@@ -52,13 +58,12 @@ export default function PokeModal({ pokemon }: { pokemon: string }) {
     };
     setValue(serializedData);
     setIsSaved(true);
+    isUpdateData()
   };
 
-  console.log(data)
   const pokemonStats = data?.stats?.map((item: any, i: number) => 
     {return {stat: item?.stat?.name.toUpperCase(), base_stat: item?.base_stat || 100}})
-  
-  console.log(data)
+
   
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-[999999]">
@@ -73,7 +78,7 @@ export default function PokeModal({ pokemon }: { pokemon: string }) {
         </div>
         {/* Close button end */}
         <div className="text-center">
-          <h4 className="text-2xl font-bold text-gray-100">{capitalizeFirstLetter(pokemon)}</h4>
+          <h4 className="text-2xl font-bold text-gray-100">{capitalizeFirstLetter(pokemon)} {(value.name && value.dateCaptured) && <LucideBadgeCheck className="inline text-green-400 mb-1" />}</h4>
             <Image 
               className='mx-auto'
               src={data?.sprites.front_default}
@@ -81,10 +86,10 @@ export default function PokeModal({ pokemon }: { pokemon: string }) {
               height={150}
               alt={`${data?.name} sprite`}
             /> 
-          <div className="mt-2 px-7 py-3 border border-gray-300 rounded-lg">
-            {myPokemon.name && <p className="text-lg font-bold text-gray-100">{`Nickname: ${myPokemon.name}`}</p>}
-            {myPokemon.dateCaptured && <p className="text-lg font-bold text-gray-100">{`Caught on: ${myPokemon.dateCaptured}`}</p>}
-          </div>
+          {(value.name && value.dateCaptured) && <div className="mt-2 px-7 py-3 border border-gray-300 rounded-lg">
+            {value.name && <p className="text-lg font-bold text-gray-100">{`Nickname: ${value.name}`}</p>}
+            {value.dateCaptured && <p className="text-lg font-bold text-gray-100">{`Caught on: ${value.dateCaptured}`}</p>}
+          </div>}
           {/* Name + Date Captured */}
         <form onSubmit={saveToLocalStorage} className="mt-4 mb-2 pt-4 rounded-lg bg-gray-600">
           <div className="flex items-center ml-10 mb-4">
@@ -93,6 +98,7 @@ export default function PokeModal({ pokemon }: { pokemon: string }) {
               id="pokemonName"
               className='border border-gray-300 rounded-lg px-4 py-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-rose-500'
               value={myPokemon.name}
+              maxLength={30}
               onChange={e => setMyPokemon({ ...myPokemon, name: e.target.value })}
             />
           </div>
@@ -104,6 +110,7 @@ export default function PokeModal({ pokemon }: { pokemon: string }) {
               className='border border-gray-300 rounded-lg px-4 py-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-rose-500'
               value={myPokemon.dateCaptured || new Date().toISOString().split("T")[0]} 
               onChange={e => setMyPokemon({ ...myPokemon, dateCaptured: e.target.value })}
+              // onSubmit={HomeRefresh}
             />
             {/* Even without input: it defaults to current day, converted to ISO format then split from T onwards */}
           </div>

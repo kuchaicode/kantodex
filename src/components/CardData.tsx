@@ -22,10 +22,10 @@ import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { LucideBadgeCheck, LucideBadge } from 'lucide-react';
 
-type Props = {
-  name:string
-  url:string
-}
+// type Props = {
+//   name:string
+//   url:string
+// }
 
 const fetchPokemon = async ({ pageParam = 0 }) => {
   const limit = pageParam >= 140 ? 11 : 20;
@@ -41,9 +41,14 @@ export default function CardData() {
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [displayData, setDisplayData] = useState<any>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'owned'>('all'); 
+  const [updateData, setUpdateData] = useState(false)
   const searchParams = useSearchParams();
   const search = searchParams.get('search') || '';
   const isSearchEmpty = !search || search.length === 0;
+
+  const isUpdateData = () => {
+    setUpdateData(!updateData)
+  }
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -96,7 +101,7 @@ export default function CardData() {
       const customData = getLocalStorage(item?.name || "")
       return { ...item, id: i+1, captureData:customData }
     }))
-  }, [search, data, completeData, isSearchEmpty]);
+  }, [search, data, completeData, isSearchEmpty, updateData]);
 // empty = incomplete data since incomplete = not fully loaded pokemon (the usual)
 // not empty = search from all
 
@@ -146,6 +151,8 @@ const filteredData = displayData?.filter((pokemon: any) => {
   return true; 
 });
 
+console.log(filteredData)
+
 // return true : show all 
 
 return (
@@ -184,8 +191,9 @@ return (
                   )}
                   <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
                     <CardHeader>
-                      <CardTitle>
+                      <CardTitle className="h-10">
                         <h3 className='text-gray-100'><span className='text-gray-300 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
+                        {pokemon?.captureData && <div className="ml-4 mt-1 text-gray-100 text-sm italic">{`${pokemon?.captureData?.name}`}</div>}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-gray-50'}`}>
@@ -201,21 +209,21 @@ return (
                     </CardContent>
                   </div>
                   <CardFooter>
-                  <span className={`mr-2 ${isOwned(pokemon) ? 'text-green-400' : 'text-gray-300'}`}>
-                    {isOwned(pokemon) ? <LucideBadgeCheck/> : <LucideBadge />} 
+                  <span className={`mr-2 ${isOwned(pokemon) ? 'text-green-400' : 'text-gray-300'} items-center justify-center align`}>
+                    {isOwned(pokemon) ? <LucideBadgeCheck /> : <LucideBadge />} 
                   </span>
                   </CardFooter>
                 </Card>
               </Link>
             )
           ))}
-          {searchParams?.get('pokemon') && <PokeModal pokemon={searchParams.get('pokemon') || ''} />}
+          {searchParams?.get('pokemon') && <PokeModal pokemon={searchParams.get('pokemon') || ''} isUpdateData={isUpdateData} />}
         </div>
       </TabsContent>
       <TabsContent value="owned">
         <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
-        {filteredData?.map((pokemon: any, index: number) => (
-    isOwned(pokemon) && (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
+          {filteredData?.map((pokemon: any, index: number) => (
+            isOwned(pokemon) && (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
               <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
                 <Card
                   className={`border border-rose-400 bg-gray-800 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
@@ -232,8 +240,9 @@ return (
                   )}
                   <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
                     <CardHeader>
-                      <CardTitle>
+                      <CardTitle className="h-10">
                         <h3 className='text-gray-100'><span className='text-gray-300 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
+                        {pokemon?.captureData && <div className="ml-4 mt-1 text-gray-100 text-sm italic">{`${pokemon?.captureData?.name}`}</div>}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-gray-50'}`}>
@@ -249,15 +258,15 @@ return (
                     </CardContent>
                   </div>
                   <CardFooter className=''>
-                  <span className={`${isOwned(pokemon) ? 'text-green-400' : 'text-gray-400'}`}>
-                    {isOwned(pokemon) ? <LucideBadgeCheck/> : <LucideBadge />} 
+                  <span className={`mr-2 ${isOwned(pokemon) ? 'text-green-400' : 'text-gray-300'} items-center justify-center align`}>
+                    {isOwned(pokemon) ? <LucideBadgeCheck /> : <LucideBadge />} 
                   </span>
                   </CardFooter>
                 </Card>
               </Link>
             )
           ))}
-          {searchParams?.get('pokemon') && <PokeModal pokemon={searchParams.get('pokemon') || ''} />}
+          {searchParams?.get('pokemon') && <PokeModal pokemon={searchParams.get('pokemon') || ''} isUpdateData={isUpdateData} />}
         </div>
       </TabsContent>
     </Tabs>
