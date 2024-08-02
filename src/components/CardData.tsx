@@ -135,14 +135,14 @@ export default function CardData() {
   }
 
   const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
-// Capitalization for  first letter move it to util folder later?
+// Capitalization for  first letter
 
-// Still not working. Ideally checks for datecaptured's presence to check if owned or not 
+//  checks for datecaptured's presence to check if owned or not 
 const isOwned = (pokemon: any) => {
   return pokemon.captureData.dateCaptured ? true : false;
 };
 
-// supposed to filter based on displaydata on own status that probably wont work for now
+// filter based on displaydata on own status that probably wont work for now
 const filteredData = displayData?.filter((pokemon: any) => {
   // console.log(pokemon)
   if (activeTab === 'owned') {
@@ -172,7 +172,7 @@ return (
         </TabsTrigger>
       </TabsList>
       <TabsContent value="all">
-        <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
+        <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-2 md:grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
           {filteredData?.map((pokemon: any, index: number) => (
             (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
               <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
@@ -189,7 +189,7 @@ return (
                       alt={`${pokemon.name} sprite`}
                     />
                   )}
-                  <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
+                  <div className={`${view === 'list' ? 'flex-auto pt-10' : ''}`}>
                     <CardHeader>
                       <CardTitle className="h-10">
                         <h3 className='text-gray-100'><span className='text-gray-300 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
@@ -221,7 +221,7 @@ return (
         </div>
       </TabsContent>
       <TabsContent value="owned">
-        <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
+       <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-2 md:grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
           {filteredData?.map((pokemon: any, index: number) => (
             isOwned(pokemon) && (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
               <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
@@ -238,7 +238,7 @@ return (
                       alt={`${pokemon.name} sprite`}
                     />
                   )}
-                  <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
+                  <div className={`${view === 'list' ? 'flex-auto pt-10' : ''}`}>
                     <CardHeader>
                       <CardTitle className="h-10">
                         <h3 className='text-gray-100'><span className='text-gray-300 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
@@ -257,7 +257,7 @@ return (
                       )}
                     </CardContent>
                   </div>
-                  <CardFooter className=''>
+                  <CardFooter>
                   <span className={`mr-2 ${isOwned(pokemon) ? 'text-green-400' : 'text-gray-300'} items-center justify-center align`}>
                     {isOwned(pokemon) ? <LucideBadgeCheck /> : <LucideBadge />} 
                   </span>
