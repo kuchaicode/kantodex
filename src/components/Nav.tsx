@@ -4,6 +4,7 @@ import React, { useCallback } from 'react'
 import { LucideSearch, LucideMoon, LucideSun} from 'lucide-react'
 import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import { Button } from './ui/button'
+import { LucideMap } from 'lucide-react'
 
 
 type Props = {}
@@ -35,10 +36,10 @@ const createQueryString = debounce(useCallback(
 // Searchy function. 500: milliseconds
 
   return (
-    <nav className='bg-rose-800 shadow-xl'>
-    <div className='max-w-6xl mx-auto px-3 py-4 flex items-center justify-between'>
-        <div className='flex items-center'>
-            <a href='#' className='text-xl font-bold text-white'>Kantodex</a>
+<nav className='bg-rose-800 shadow-xl'>
+    <div className='max-w-4xl mx-auto px-3 py-4 flex justify-between'>
+        <div >
+            <Button><LucideMoon/></Button>
         </div>
         <div className='flex-grow flex justify-center relative'>
             <input
@@ -47,12 +48,9 @@ const createQueryString = debounce(useCallback(
                 className='border border-red-600 rounded-lg px-4 py-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-red-500 bg-white text-black placeholder-gray-400'
                 onChange={(e) => { createQueryString('search', e.target.value) }}
             />
-            <div className='absolute top-1/2 transform -translate-y-1/2 text-black'>
+            <div className='relative right-10 top-7 transform -translate-y-1/2 text-black'>
                 <LucideSearch />
             </div>
-        </div>
-        <div className='flex items-center'>
-            <Button><LucideMoon/></Button>
         </div>
     </div>
 </nav>

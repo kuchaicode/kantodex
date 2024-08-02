@@ -145,123 +145,122 @@ const filteredData = displayData?.filter((pokemon: any) => {
   }
   return true; 
 });
-console.log(displayData)
-console.log(filteredData)
+
 // return true : show all 
 
 return (
   <>
-  <Tabs defaultValue="all" className="mx-auto flex flex-col flex-grow">
-    <TabsList className='w-1/2 p-8 mx-auto'>
-      <TabsTrigger value="all" className='flex flex-grow py-4 px-10' onClick={() => setActiveTab('all')}>
-        <LucideAlbum className='mr-2' />All
-      </TabsTrigger>
-      <TabsTrigger value="owned" className='flex flex-grow py-4 px-10' onClick={() => setActiveTab('owned')}>
-        <LucideHouse className='mr-2' />Owned
-      </TabsTrigger>
-      <div className='flex justify-center mb-5 mr-5'>
-    <Button onClick={() => setView(view === 'grid' ? 'list' : 'grid')} className="rounded ">
-      {capitalizeFirstLetter(view)} {view === 'grid' ? <LucideGrid className='ml-2' /> : <LucideList className='ml-2' />}
-    </Button>
-      </div>
-    </TabsList>
-    <TabsContent value="all">
-      <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
+    <div className='absolute flex justify-end top-2 right-5 mt-2 mr-2'>
+      <Button onClick={() => setView(view === 'grid' ? 'list' : 'grid')} className="rounded-md text-xs">
+        <span className='hidden md:inline'>{capitalizeFirstLetter(view)}</span>{view === 'grid' ? <LucideGrid className='ml-2' /> : <LucideList className='ml-2' />}
+      </Button>
+    </div>
+    <Tabs defaultValue="all" className="mx-auto flex flex-col flex-grow">
+      <TabsList className='w-3/4 p-8 mx-auto border border-rose-50 border-opacity-20'>
+        <TabsTrigger value="all" className='flex flex-grow py-4 px-12' onClick={() => setActiveTab('all')}>
+          <LucideAlbum className='mr-2' />All
+        </TabsTrigger>
+        <TabsTrigger value="owned" className='flex flex-grow py-4 px-12' onClick={() => setActiveTab('owned')}>
+          <LucideHouse className='mr-2' />Owned
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="all">
+        <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
+          {filteredData?.map((pokemon: any, index: number) => (
+            (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
+              <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
+                <Card
+                  className={`border border-rose-400 bg-gray-800 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
+                  ref={index === filteredData.length - 1 ? loadMoreRef : null}
+                >
+                  {view === 'list' && (
+                    <Image
+                      className='m-4'
+                      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
+                      width={100}
+                      height={100}
+                      alt={`${pokemon.name} sprite`}
+                    />
+                  )}
+                  <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
+                    <CardHeader>
+                      <CardTitle>
+                        <h3 className='text-gray-100'><span className='text-gray-300 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-gray-50'}`}>
+                      {view === 'grid' && (
+                        <Image
+                          className='mx-auto'
+                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
+                          width={150}
+                          height={150}
+                          alt={`${pokemon.name} sprite`}
+                        />
+                      )}
+                    </CardContent>
+                  </div>
+                  <CardFooter>
+                  <span className={`mr-2 ${isOwned(pokemon) ? 'text-green-400' : 'text-gray-300'}`}>
+                    {isOwned(pokemon) ? <LucideBadgeCheck/> : <LucideBadge />} 
+                  </span>
+                  </CardFooter>
+                </Card>
+              </Link>
+            )
+          ))}
+          {searchParams?.get('pokemon') && <PokeModal pokemon={searchParams.get('pokemon') || ''} />}
+        </div>
+      </TabsContent>
+      <TabsContent value="owned">
+        <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
         {filteredData?.map((pokemon: any, index: number) => (
-          (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
-            <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
-              <Card
-                className={`border border-rose-400 bg-gray-800 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
-                ref={index === filteredData.length - 1 ? loadMoreRef : null}
-              >
-                {view === 'list' && (
-                  <Image
-                    className='m-4'
-                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
-                    width={100}
-                    height={100}
-                    alt={`${pokemon.name} sprite`}
-                  />
-                )}
-                <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
-                  <CardHeader>
-                    <CardTitle>
-                      <h3 className='text-gray-100'><span className='text-gray-300 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-gray-50'}`}>
-                    {view === 'grid' && (
-                      <Image
-                        className='mx-auto'
-                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
-                        width={150}
-                        height={150}
-                        alt={`${pokemon.name} sprite`}
-                      />
-                    )}
-                  </CardContent>
-                </div>
-                <CardFooter>
-                <span className={`mr-2 ${isOwned(pokemon) ? 'text-green-400' : 'text-gray-300'}`}>
-                  {isOwned(pokemon) ? <LucideBadgeCheck/> : <LucideBadge />} 
-                </span>
-                </CardFooter>
-              </Card>
-            </Link>
-          )
-        ))}
-        {searchParams?.get('pokemon') && <PokeModal pokemon={searchParams.get('pokemon') || ''} />}
-      </div>
-    </TabsContent>
-    <TabsContent value="owned">
-      <div className={`container mx-auto ${view === 'grid' ? 'grid grid-cols-4 gap-4 w-3/4' : 'flex flex-col w-1/2'}`}>
-      {filteredData?.map((pokemon: any, index: number) => (
-  isOwned(pokemon) && (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
-            <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
-              <Card
-                className={`border border-rose-300 bg-gray-800 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
-                ref={index === filteredData.length - 1 ? loadMoreRef : null}
-              >
-                {view === 'list' && (
-                  <Image
-                    className='m-4'
-                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
-                    width={100}
-                    height={100}
-                    alt={`${pokemon.name} sprite`}
-                  />
-                )}
-                <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
-                  <CardHeader>
-                    <CardTitle>
-                      <h3 className='text-gray-100'><span className='text-gray-300 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-gray-50'}`}>
-                    {view === 'grid' && (
-                      <Image
-                        className='mx-auto'
-                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
-                        width={150}
-                        height={150}
-                        alt={`${pokemon.name} sprite`}
-                      />
-                    )}
-                  </CardContent>
-                </div>
-                <CardFooter className=''>
-                <span className={`${isOwned(pokemon) ? 'text-green-400' : 'text-gray-400'}`}>
-                  {isOwned(pokemon) ? <LucideBadgeCheck/> : <LucideBadge />} 
-                </span>
-                </CardFooter>
-              </Card>
-            </Link>
-          )
-        ))}
-        {searchParams?.get('pokemon') && <PokeModal pokemon={searchParams.get('pokemon') || ''} />}
-      </div>
-    </TabsContent>
-  </Tabs>
+    isOwned(pokemon) && (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
+              <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
+                <Card
+                  className={`border border-rose-300 bg-gray-800 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
+                  ref={index === filteredData.length - 1 ? loadMoreRef : null}
+                >
+                  {view === 'list' && (
+                    <Image
+                      className='m-4'
+                      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
+                      width={100}
+                      height={100}
+                      alt={`${pokemon.name} sprite`}
+                    />
+                  )}
+                  <div className={`${view === 'list' ? 'flex-2 pt-10' : ''}`}>
+                    <CardHeader>
+                      <CardTitle>
+                        <h3 className='text-gray-100'><span className='text-gray-300 mr-2'>{pokemon.id}</span>{capitalizeFirstLetter(pokemon.name)}</h3>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className={`align-middle p-3 m-3 border-2 border-black-200 rounded-xl ${view === 'list' ? 'bg-transparent border-none' : 'bg-gray-50'}`}>
+                      {view === 'grid' && (
+                        <Image
+                          className='mx-auto'
+                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
+                          width={150}
+                          height={150}
+                          alt={`${pokemon.name} sprite`}
+                        />
+                      )}
+                    </CardContent>
+                  </div>
+                  <CardFooter className=''>
+                  <span className={`${isOwned(pokemon) ? 'text-green-400' : 'text-gray-400'}`}>
+                    {isOwned(pokemon) ? <LucideBadgeCheck/> : <LucideBadge />} 
+                  </span>
+                  </CardFooter>
+                </Card>
+              </Link>
+            )
+          ))}
+          {searchParams?.get('pokemon') && <PokeModal pokemon={searchParams.get('pokemon') || ''} />}
+        </div>
+      </TabsContent>
+    </Tabs>
 
 </>
 );
