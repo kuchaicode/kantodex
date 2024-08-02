@@ -1,10 +1,10 @@
 "use client"
 
 import React, { useCallback } from 'react'
-import { LucideSearch, LucideMoon, LucideSun} from 'lucide-react'
+import { LucideSearch } from 'lucide-react'
 import { usePathname, useSearchParams, useRouter } from 'next/navigation'
-import { Button } from './ui/button'
-import { LucideMap } from 'lucide-react'
+
+import ThemeToggle from '@/lib/ThemeToggle'
 
 
 type Props = {}
@@ -39,7 +39,7 @@ const createQueryString = debounce(useCallback(
 <nav className='bg-rose-800 shadow-xl'>
     <div className='max-w-4xl mx-auto px-3 py-4 flex justify-between'>
         <div >
-            <Button><LucideMoon/></Button>
+            <ThemeToggle />
         </div>
         <div className='flex-grow flex justify-center relative'>
             <input

@@ -218,7 +218,7 @@ return (
     isOwned(pokemon) && (pokemon.name.includes(search.toLowerCase()) || isSearchEmpty) && (
               <Link key={pokemon.name} href={`?${createQueryString('pokemon', pokemon.name)}`}>
                 <Card
-                  className={`border border-rose-300 bg-gray-800 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
+                  className={`border border-rose-400 bg-gray-800 ${view === 'list' ? 'flex items-center mb-2' : ''}`}
                   ref={index === filteredData.length - 1 ? loadMoreRef : null}
                 >
                   {view === 'list' && (

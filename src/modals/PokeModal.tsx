@@ -6,8 +6,18 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import { useState, useEffect } from "react";
 import { LucideX } from "lucide-react";
 import Image from "next/image";
+import StatsGraph from "@/components/ui/graph"
 
 const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+
+const statsArray = [
+  {label: "HP", key: "hp"},
+  {label: "Attack", key: "attack"},
+  {label: "Defense", key: "defense"},
+  {label: "Sp. Atk", key: "special_attack"},
+  {label: "Sp. Def", key: "special_defense"},
+  {label: "Speed", key: "speed"},
+];
 
 export default function PokeModal({ pokemon }: { pokemon: string }) {
   const [value, setValue] = useLocalStorage(pokemon, "");
@@ -45,10 +55,14 @@ export default function PokeModal({ pokemon }: { pokemon: string }) {
   };
 
   console.log(data)
+  const pokemonStats = data?.stats?.map((item: any, i: number) => 
+    {return {stat: item?.stat?.name.toUpperCase(), base_stat: item?.base_stat || 100}})
+  
+  console.log(data)
   
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-[999999]">
-      <div className="p-8 border border-gray-300 w-[40rem] shadow-lg rounded-lg bg-gray-800 relative">
+      <div className="p-8 border border-gray-300 w-[40rem] shadow-lg rounded-lg bg-gray-800 relative max-h-[50rem] overflow-y-auto">
         <div className="flex justify-end">
           <Link
             href={`/`}
@@ -61,18 +75,18 @@ export default function PokeModal({ pokemon }: { pokemon: string }) {
         <div className="text-center">
           <h4 className="text-2xl font-bold text-gray-100">{capitalizeFirstLetter(pokemon)}</h4>
             <Image 
-                    className='mx-auto'
-                    src={data?.sprites.front_default}
-                    width={150}
-                    height={150}
-                    alt={`${data?.name} sprite`}
+              className='mx-auto'
+              src={data?.sprites.front_default}
+              width={150}
+              height={150}
+              alt={`${data?.name} sprite`}
             /> 
           <div className="mt-2 px-7 py-3 border border-gray-300 rounded-lg">
             {myPokemon.name && <p className="text-lg font-bold text-gray-100">{`Nickname: ${myPokemon.name}`}</p>}
             {myPokemon.dateCaptured && <p className="text-lg font-bold text-gray-100">{`Caught on: ${myPokemon.dateCaptured}`}</p>}
           </div>
           {/* Name + Date Captured */}
-        <form onSubmit={saveToLocalStorage} className="mt-4">
+        <form onSubmit={saveToLocalStorage} className="mt-4 mb-2 pt-4 rounded-lg bg-gray-600">
           <div className="flex items-center ml-10 mb-4">
             <label htmlFor="pokemonName" className="text-sm font-medium text-gray-100 mr-2">Nickname</label>
             <input
@@ -98,9 +112,13 @@ export default function PokeModal({ pokemon }: { pokemon: string }) {
           {/* Form end */}
           <div className="justify-center">
             <hr />
-            <p><span className="font-semibold">Height:</span> {(+data?.height / 10)} m</p> 
-            <p><span className="font-semibold">Weight:</span> {(+data?.weight/ 10)} kg</p>
+            <div className="flex justify-around">
+            <p className="p-2"><span className="font-semibold">Height:</span> {(+data?.height / 10)} m</p> 
+            <p className="p-2"><span className="font-semibold">Weight:</span> {(+data?.weight/ 10)} kg</p>
+            </div>
+            <StatsGraph data={pokemonStats} />
             {/* Height and weight are divided because the API data provided is in hectograms */}
+            
           </div>
           {/* PokeAPI data above */}
         </div>
