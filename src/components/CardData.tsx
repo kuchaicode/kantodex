@@ -49,6 +49,7 @@ export default function CardData() {
   const isUpdateData = () => {
     setUpdateData(!updateData)
   }
+  // This literally exists as something to be observed -> just to be true or false for updating rendered client side data. Not really an elegant solution. It work tho. 
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -67,6 +68,7 @@ export default function CardData() {
     return response.data;
   },
   });
+  // This loads the limited 151 on text entry (w/ debounce) for client-side Search  due to limitations of the infinite scrolling implementation using Intersection Observer
 
   const {
     data,
@@ -97,13 +99,17 @@ export default function CardData() {
     isSearchEmpty ?
       rawData = data?.pages.flatMap(page => page.results) as Array<{name:string, url:string}> :
       rawData = completeData?.results as Array<{name:string, url:string}>
+    console.log(rawData)
     setDisplayData(rawData?.map((item, i) => {
       const customData = getLocalStorage(item?.name || "")
       return { ...item, id: i+1, captureData:customData }
     }))
   }, [search, data, completeData, isSearchEmpty, updateData]);
+// Why so convoluted: mixing client side data with API data. It works tho
 // empty = incomplete data since incomplete = not fully loaded pokemon (the usual)
 // not empty = search from all
+// 
+// updateData is the true/false thing to observe
 
 
   // Node: HTMLelement, else doesnt compile
@@ -152,7 +158,7 @@ const isOwned = (pokemon: any) => {
   return pokemon.captureData.dateCaptured ? true : false;
 };
 
-// filter based on displaydata on own status that probably wont work for now
+
 const filteredData = displayData?.filter((pokemon: any) => {
   // console.log(pokemon)
   if (activeTab === 'owned') {
@@ -160,8 +166,6 @@ const filteredData = displayData?.filter((pokemon: any) => {
   }
   return true; 
 });
-
-console.log(filteredData)
 
 // return true : show all 
 

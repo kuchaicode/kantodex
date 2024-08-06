@@ -6,10 +6,13 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LucideX, LucideBadgeCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import StatsGraph from "@/components/ui/graph"
 import { useRouter } from "next/navigation";
 import TypeBadge from "@/components/TypeBadge";
+import { useToast } from "@/components/ui/use-toast";
+
 
 const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
@@ -26,6 +29,8 @@ const statsArray = [
   {label: "Speed", key: "speed"},
 ];
 
+
+
 export default function PokeModal({ pokemon, isUpdateData }: localData){
   const router = useRouter();
   const [value, setValue] = useLocalStorage(pokemon, "");
@@ -39,6 +44,20 @@ export default function PokeModal({ pokemon, isUpdateData }: localData){
       return response.data;
     },
   });
+  
+const { toast } = useToast()
+const deleteCaptureData = (e: any) => {
+  e.preventDefault()
+  setMyPokemon({ name: "", dateCaptured: "" })
+  setValue({})
+  localStorage.removeItem(pokemon)
+  isUpdateData()
+  // toast({
+  //   title: "HELLO",
+  //   description: "STUFF DELETED!!!!!!!",
+  // });
+}
+// Testing here ^
 
   useEffect(() => {
     try {
@@ -66,7 +85,6 @@ export default function PokeModal({ pokemon, isUpdateData }: localData){
   const pokemonStats = data?.stats?.map((item: any, i: number) => 
     {return {stat: item?.stat?.name.toUpperCase(), base_stat: item?.base_stat || 100}})
 
-  console.log(data?.types)
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-[999999]">
       <div className="p-8 border border-gray-300 w-[40rem] shadow-lg rounded-lg bg-gray-800 relative max-h-[50rem] overflow-y-auto">
@@ -113,6 +131,7 @@ export default function PokeModal({ pokemon, isUpdateData }: localData){
               value={myPokemon.name}
               maxLength={30}
               onChange={e => setMyPokemon({ ...myPokemon, name: e.target.value })}
+              required={true}
             />
           </div>
           <div className="flex items-center ml-6 mb-4">
@@ -127,9 +146,21 @@ export default function PokeModal({ pokemon, isUpdateData }: localData){
             />
             {/* Even without input: it defaults to current day, converted to ISO format then split from T onwards */}
           </div>
-            <button type="submit" className="mt-2 mb-4 px-4 py-2 bg-rose-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">Update Capture Info</button>
+          <Button type="submit" className="mt-2 mb-4 px-4 py-2 bg-rose-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">Update Capture Info</Button>
+          <div className="pb-2">
+            <label htmlFor="removePokemon" className="text-sm font-medium text-gray-100 mr-2">Reset Data?</label>
+              <Button
+                type="submit"
+                id="removePokemon"
+                className='border bg-border-700 rounded-lg px-4 py-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-rose-500'
+                value= {`Clear Data`}  
+                onClick={deleteCaptureData}
+              >Clear Data
+              </Button>
+          </div>
           </form>
           {/* Form end */}
+
           <div className="justify-center">
             <hr />
             <div className="flex justify-around">

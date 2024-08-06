@@ -23,7 +23,6 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export default function StatsGraph({ data }: any) {
-  console.log(data)
   return (
     <Card>
       <CardHeader>

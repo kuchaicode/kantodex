@@ -5,6 +5,7 @@ import "@/app/globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import PokedataProvider from "@/components/PokedataProvider";
 import Nav from "@/components/Nav";
+import { Toaster } from '@/components/ui/toaster';
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -31,7 +32,8 @@ export default function RootLayout({
           <Suspense>
           <PokedataProvider>
             <Nav />
-            {children} 
+            {children}
+            <Toaster /> 
           </PokedataProvider>
           </Suspense>
         </ThemeProvider>
